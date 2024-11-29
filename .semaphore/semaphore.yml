@@ -20,3 +20,5 @@ blocks:
             - docker build -t hello-app .
             - docker tag hello-app "$DOCKER_USERNAME"/hello-app
             - docker push "$DOCKER_USERNAME"/hello-app
+      secrets:
+        - name: dockerhub
