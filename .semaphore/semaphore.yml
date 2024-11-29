@@ -17,6 +17,10 @@ blocks:
             - 'docker pull $SEMAPHORE_REGISTRY_URL/demo:latest || true'
             - 'docker build --cache-from $SEMAPHORE_REGISTRY_URL/demo:latest -t $SEMAPHORE_REGISTRY_URL/demo:$SEMAPHORE_WORKFLOW_ID .'
             - 'docker push $SEMAPHORE_REGISTRY_URL/demo:$SEMAPHORE_WORKFLOW_ID'
+      agent:
+        machine:
+          type: e1-standard-2
+          os_image: ubuntu2004
   - name: Tests
     task:
       prologue:
