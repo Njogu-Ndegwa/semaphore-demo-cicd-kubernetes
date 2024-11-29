@@ -1,24 +1,14 @@
 version: v1.0
-name: Run in Docker
+name: Docker
 agent:
   machine:
     type: f1-standard-2
-    os_image: ubuntu2004
-  containers:
-    - name: main
-      image: 'registry.semaphoreci.com/node:10'
-    - name: database
-      image: 'registry.semaphoreci.com/postgres:11'
+    os_image: ubuntu2204
 blocks:
-  - name: Hello World
+  - name: Build
     task:
       jobs:
-        - name: Test job
+        - name: docker build
           commands:
             - checkout
-            - echo $DOCKER_PASSWORD | docker login --username "$DOCKER_USERNAME" --password-stdin
-            - docker build -t hello-app .
-            - docker tag hello-app "$DOCKER_USERNAME"/hello-app
-            - docker push "$DOCKER_USERNAME"/hello-app
-      secrets:
-        - name: dockerhub
+            - docker build -t your-image .
