@@ -15,4 +15,8 @@ blocks:
       jobs:
         - name: Test job
           commands:
-            - docker login
+            - checkout
+            - echo $DOCKER_PASSWORD | docker login --username "$DOCKER_USERNAME" --password-stdin
+            - docker build -t hello-app .
+            - docker tag hello-app "$DOCKER_USERNAME"/hello-app
+            - docker push "$DOCKER_USERNAME"/hello-app
