@@ -1,49 +1,19 @@
 version: v1.0
-name: Docker
+name: Run in Docker
 agent:
   machine:
     type: f1-standard-2
-    os_image: ubuntu2204
+  containers:
+    - name: main
+      image: 'registry.semaphoreci.com/node:10' # Your primary container where commands are run
+    - name: database
+      image: 'registry.semaphoreci.com/postgres:11'
+
 blocks:
-  - name: Build
+  - name: Hello World
     task:
       jobs:
-        - name: docker build
+        - name: Test job
           commands:
-            - checkout
-            - docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD
-            - 'docker pull $DOCKER_HUB_USERNAME/demo:latest || true'
-            - 'docker build --cache-from $DOCKER_HUB_USERNAME/demo:latest -t $DOCKER_HUB_USERNAME/demo:$SEMAPHORE_WORKFLOW_ID .'
-            - 'docker push $DOCKER_HUB_USERNAME/demo:$SEMAPHORE_WORKFLOW_ID'
-      agent:
-        machine:
-          type: e1-standard-2
-          os_image: ubuntu2004
-  - name: Tests
-    task:
-      prologue:
-        commands:
-          - docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD
-          - 'docker pull $DOCKER_HUB_USERNAME/demo:$SEMAPHORE_WORKFLOW_ID'
-      jobs:
-        - name: Unit Tests
-          commands:
-            - 'docker run -t $DOCKER_HUB_USERNAME/demo:$SEMAPHORE_WORKFLOW_ID npm run lint'
-        - name: Functional Test
-          commands:
-            - sem-service start postgres
-            - 'docker run --net=host -t $DOCKER_HUB_USERNAME/demo:$SEMAPHORE_WORKFLOW_ID npm run ping'
-            - 'docker run --net=host -t $DOCKER_HUB_USERNAME/demo:$SEMAPHORE_WORKFLOW_ID npm run migrate'
-        - name: Integration tests
-          commands:
-            - sem-service start postgres
-            - 'docker run --net=host -t $DOCKER_HUB_USERNAME/demo:$SEMAPHORE_WORKFLOW_ID npm run test'
-  - name: Push
-    task:
-      jobs:
-        - name: Push
-          commands:
-            - docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD
-            - 'docker pull $DOCKER_HUB_USERNAME/demo:$SEMAPHORE_WORKFLOW_ID'
-            - 'docker tag $DOCKER_HUB_USERNAME/demo:$SEMAPHORE_WORKFLOW_ID $DOCKER_HUB_USERNAME/demo:latest'
-            - 'docker push $DOCKER_HUB_USERNAME/demo:latest'
+            - checkout # Check out the code
+            - echo "Hello from my 'main' container"
