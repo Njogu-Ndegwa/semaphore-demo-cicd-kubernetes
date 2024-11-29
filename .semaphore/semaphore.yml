@@ -11,4 +11,41 @@ blocks:
         - name: docker build
           commands:
             - checkout
-            - docker build -t your-image .
+            - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+            - 'docker pull $DOCKER_USERNAME/demo:latest || true'
+            - 'docker build --cache-from $DOCKER_USERNAME/demo:latest -t $DOCKER_USERNAME/demo:$SEMAPHORE_WORKFLOW_ID .'
+            - 'docker push $DOCKER_USERNAME/demo:$SEMAPHORE_WORKFLOW_ID'
+      secrets:
+        - name: dockerhub
+  - name: Tests
+    task:
+      secrets:
+        - name: dockerhub
+      prologue:
+        commands:
+          - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+          - 'docker pull $DOCKER_USERNAME/demo:$SEMAPHORE_WORKFLOW_ID'
+      jobs:
+        - name: Unit tests
+          commands:
+            - 'docker run -t $DOCKER_USERNAME/demo:$SEMAPHORE_WORKFLOW_ID npm run lint'
+        - name: Function Tests
+          commands:
+            - sem-service start postgres
+            - 'docker run --net=host -t $DOCKER_USERNAME/demo:$SEMAPHORE_WORKFLOW_ID npm run ping'
+            - 'docker run --net=host -t $DOCKER_USERNAME/demo:$SEMAPHORE_WORKFLOW_ID npm run migrate'
+        - name: Integrations Tests
+          commands:
+            - sem-service start postgres
+            - 'docker run --net=host -it $DOCKER_USERNAME/demo:$SEMAPHORE_WORKFLOW_ID npm run test'
+  - name: 'Block #3'
+    task:
+      secrets:
+        - name: dockerhub
+      jobs:
+        - name: 'Job #1'
+          commands:
+            - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+            - 'docker pull $DOCKER_USERNAME/demo:$SEMAPHORE_WORKFLOW_ID'
+            - 'docker tag $DOCKER_USERNAME/demo:$SEMAPHORE_WORKFLOW_ID $DOCKER_USERNAME/demo:latest'
+            - 'docker push $DOCKER_USERNAME/demo:latest'
