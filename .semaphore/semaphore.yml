@@ -49,3 +49,20 @@ blocks:
             - 'docker pull $DOCKER_USERNAME/demo:$SEMAPHORE_WORKFLOW_ID'
             - 'docker tag $DOCKER_USERNAME/demo:$SEMAPHORE_WORKFLOW_ID $DOCKER_USERNAME/demo:latest'
             - 'docker push $DOCKER_USERNAME/demo:latest'
+promotions:
+  - name: Canary
+    pipeline_file: pipeline_11.yml
+    auto_promote:
+      when: branch = 'master' AND result = 'passed'
+    parameters:
+      env_vars:
+        - required: true
+          options: []
+          default_value: '1'
+          description: Number of Canary pods to deploy
+          name: CANARY_PODS
+        - required: true
+          options: []
+          default_value: '2'
+          description: Number of stable pods to scale
+          name: STABLE_PODS
