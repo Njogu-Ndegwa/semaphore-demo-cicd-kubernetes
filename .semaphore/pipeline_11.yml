@@ -12,7 +12,7 @@ blocks:
           commands:
             - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
             - 'docker pull $DOCKER_USERNAME/demo:latest || true'
-            - 'docker tag $SEMAPHORE_REGISTRY_URL/demo:$SEMAPHORE_WORKFLOW_ID $DOCKER_USERNAME/demo:$SEMAPHORE_WORKFLOW_ID'
+            - 'docker tag $DOCKER_USERNAME/demo:$SEMAPHORE_WORKFLOW_ID $DOCKER_USERNAME/demo:$SEMAPHORE_WORKFLOW_ID'
             - 'docker push $DOCKER_USERNAME/demo:$SEMAPHORE_WORKFLOW_ID'
       secrets:
         - name: dockerhub
