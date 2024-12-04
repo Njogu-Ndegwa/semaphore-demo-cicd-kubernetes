@@ -16,3 +16,28 @@ blocks:
             - 'docker push $DOCKER_USERNAME/demo:$SEMAPHORE_WORKFLOW_ID'
       secrets:
         - name: dockerhub
+  - name: Deploy
+    task:
+      secrets:
+        - name: aws-key
+        - name: dockerhub
+      jobs:
+        - name: Image
+          commands:
+            - 'curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"'
+            - unzip awscliv2.zip
+            - sudo ./aws/install
+            - 'curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"'
+            - chmod +x kubectl
+            - sudo mv kubectl /usr/local/bin/
+            - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+            - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+            - aws configure set region eu-central-1
+            - aws eks update-kubeconfig --name beautiful-dance-duck --region eu-central-1
+            - echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin
+            - 'docker tag $SEMAPHORE_REGISTRY_URL/demo:$SEMAPHORE_WORKFLOW_ID $DOCKER_USERNAME/demo:$SEMAPHORE_WORKFLOW_ID'
+            - '$DOCKER_USERNAME/demo:$SEMAPHORE_WORKFLOW_ID'
+            - checkout
+            - kubectl apply -f manifests/service.yml
+            - './apply.sh manifests/deployment.yml addressbook-canary $CANARY_PODS docker.io/$DOCKER_USERNAME/demo:$SEMAPHORE_WORKFLOW_ID'
+            - if kubectl get deployment addressbook-stable;  then kubectl scale --replicas=$STABLE_PODS deployment/addressbook-stable fi
