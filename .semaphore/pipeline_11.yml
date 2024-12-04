@@ -20,6 +20,7 @@ blocks:
     task:
       secrets:
         - name: aws-key
+        - name: db-params
         - name: dockerhub
       jobs:
         - name: Image
